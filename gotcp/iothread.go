@@ -123,40 +123,6 @@ func (s *IoThread) Start() error {
 	return nil
 }
 
-func (s *IoThread) handleNotify()  {
-	logging.Debug("NotifyList len:%d", len(s.NotifyList))
-	if len(s.NotifyList) != 0 {
-		s.NotifyMutex.Lock()
-		var nl = s.NotifyList
-		s.NotifyList = []*NotifyEvent{} //置空
-		s.NotifyMutex.Unlock()
-		for _, v := range nl {
-			if v.Type == EVENT_ACCEPT {
-				s.handleAcceptEvent(v.Info)
-			} else if v.Type == EVENT_WRITE {
-				s.handleWriteEvent(v.Info)
-			} else if v.Type == EVENT_CLOSE {
-				s.handleCloseEvent(v.Info)
-			}
-		}
-	}
-}
-
-func (s *IoThread) Notify(_type int, info *SocketInfo) error {
-	e := &NotifyEvent{
-		Type: _type,
-		Info: info,
-	}
-	s.NotifyMutex.Lock()
-	s.NotifyList = append(s.NotifyList, e)
-	s.NotifyMutex.Unlock()
-	_, err := syscall.Write(s.NotifyFd, s.NotifyWriteBytes[:])
-	if err != nil {
-		logging.Error("IoThread Notify failed,err:%s", err.Error())
-		return err
-	}
-	return nil
-}
 
 func (s *IoThread) handleAcceptEvent(socketInfo *SocketInfo) error {
 	logging.Debug("HandleAcceptEvent,fd:%d,id:%d", socketInfo.Fd, socketInfo.Id)
@@ -216,27 +182,23 @@ func (s *IoThread) handleCloseEvent(socketInfo *SocketInfo) error {
 	return nil
 }
 
-//异步场景下检查socket唯一id是否匹配
-func (s *IoThread) CheckSocketInfo(socketInfo *SocketInfo) bool {
-	return s.Owner.CheckSocketId(socketInfo.Fd, socketInfo.Id)
-}
-
-func (s *IoThread) closeConn(fd int) error {
-	c := s.Owner.ConnList[fd]
-	if c == nil {
-		logging.Error("CloseConn already closed,fd=%d", fd)
-		return nil
+func (s *IoThread) handleNotify()  {
+	logging.Debug("NotifyList len:%d", len(s.NotifyList))
+	if len(s.NotifyList) != 0 {
+		s.NotifyMutex.Lock()
+		var nl = s.NotifyList
+		s.NotifyList = []*NotifyEvent{} //置空
+		s.NotifyMutex.Unlock()
+		for _, v := range nl {
+			if v.Type == EVENT_ACCEPT {
+				s.handleAcceptEvent(v.Info)
+			} else if v.Type == EVENT_WRITE {
+				s.handleWriteEvent(v.Info)
+			} else if v.Type == EVENT_CLOSE {
+				s.handleCloseEvent(v.Info)
+			}
+		}
 	}
-
-	if c.SInfo.WriteBuffer.Len() != 0 {
-		s.tryWrite(c.SInfo.Fd)
-	}
-
-	EpollDelFd(s.EpollFd, fd)
-	syscall.Close(fd)
-	s.Owner.ConnList[fd] = nil
-	logging.Debug("CloseConn ok,SocketInfo:%+v", c.SInfo)
-	return nil
 }
 
 func (s *IoThread) handleRead(fd int) error {
@@ -315,25 +277,6 @@ func (s *IoThread) handleRead(fd int) error {
 	return nil
 }
 
-func (s *IoThread) tryWrite(fd int) error {
-	return s.handleWrite(fd)
-}
-
-//在io线程中才可以调用
-func (s *IoThread) CloseDirect(fd int) error {
-	return s.closeConn(fd)
-}
-
-//在io线程中才可以调用
-func (s *IoThread) WriteDirect(fd int,msg []byte) error {
-	n, err := syscall.Write(fd, msg)
-	if err != nil || n < 0 { //看看EAGAIN会返回啥
-		logging.Error("WriteDirect error,fd=%d,msg=%s", fd, string(msg))
-		s.closeConn(fd)
-		return errors.New("Write error")
-	}
-	return nil
-}
 
 func (s *IoThread) handleWrite(fd int) error {
 	connInfo := s.Owner.ConnList[fd]
@@ -379,28 +322,64 @@ func (s *IoThread) handleWrite(fd int) error {
 	return nil
 }
 
-/*
-func (s *IoThread) sendMsg(fd int, msg []byte) error {
-	connInfo := s.Owner.ConnList[fd]
-	if connInfo == nil {
-		logging.Error("IoThread HandleSendMsg already closed,fd=%d", fd)
-		return errors.New("HandleSendMsg closed")
-	}
-	nWrite, err := connInfo.SInfo.WriteBuffer.Write(msg)
-	if nWrite != len(msg) || err != nil {
-		logging.Error("HandleSendMsg Write Buffer failed,fd=%d", fd)
-		s.closeConn(fd)
-		return errors.New("HandleSendMsg Write Buffer failed")
+func (s *IoThread) tryWrite(fd int) error {
+	return s.handleWrite(fd)
+}
+
+//io线程内关闭连接
+func (s *IoThread) closeConn(fd int) error {
+	c := s.Owner.ConnList[fd]
+	if c == nil {
+		logging.Error("CloseConn already closed,fd=%d", fd)
+		return nil
 	}
 
-	err = EpollModFd(s.EpollFd, fd, syscall.EPOLLIN|syscall.EPOLLERR|syscall.EPOLLOUT)
-	if err != nil {
-		logging.Error("sendMsg EpollModFd failed,fd=%d,err=%s", fd, err.Error())
-		s.closeConn(fd)
-		return errors.New("sendMsg EpollModFd failed")
+	if c.SInfo.WriteBuffer.Len() != 0 {
+		s.tryWrite(c.SInfo.Fd)
 	}
 
-	//logging.Debug("sendMsg msg:%s", string(msg))
+	EpollDelFd(s.EpollFd, fd)
+	syscall.Close(fd)
+	s.Owner.ConnList[fd] = nil
+	logging.Debug("CloseConn ok,SocketInfo:%+v", c.SInfo)
 	return nil
 }
-*/
+
+//异步场景下检查socket唯一id是否匹配
+func (s *IoThread) CheckSocketInfo(socketInfo *SocketInfo) bool {
+	return s.Owner.CheckSocketId(socketInfo.Fd, socketInfo.Id)
+}
+
+
+//在io线程中才可以调用
+func (s *IoThread) CloseDirect(fd int) error {
+	return s.closeConn(fd)
+}
+
+//在io线程中才可以调用
+func (s *IoThread) WriteDirect(fd int,msg []byte) error {
+	n, err := syscall.Write(fd, msg)
+	if err != nil || n < 0 { //看看EAGAIN会返回啥
+		logging.Error("WriteDirect error,fd=%d,msg=%s", fd, string(msg))
+		s.closeConn(fd)
+		return errors.New("Write error")
+	}
+	return nil
+}
+
+//外部通知io线程，chan性能不强，这里用 mutex+slice 来代替
+func (s *IoThread) Notify(_type int, info *SocketInfo) error {
+	e := &NotifyEvent{
+		Type: _type,
+		Info: info,
+	}
+	s.NotifyMutex.Lock()
+	s.NotifyList = append(s.NotifyList, e)
+	s.NotifyMutex.Unlock()
+	_, err := syscall.Write(s.NotifyFd, s.NotifyWriteBytes[:])
+	if err != nil {
+		logging.Error("IoThread Notify failed,err:%s", err.Error())
+		return err
+	}
+	return nil
+}

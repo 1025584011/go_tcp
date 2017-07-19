@@ -11,16 +11,25 @@ var(
 	Server *TcpServer
 )
 
-func InitServer(ioNum, maxSocketNum int,addr string,parser TcpParser){
-	Server = NewTcpServer(ioNum, maxSocketNum,addr,parser)
-	Server.Start()
-}
-
+/*
+下面接口中的两个方法都是在io线程中调用的，不能有任何阻塞操作，业务中有阻塞场景请起协程，然后使用ConnInfo中的异步接口。
+Unpack 用来计算包长；遇到非法包才返回false；未判断出包长时packlen返回0；成功时packlen返回包长
+HandlePack 用来处理业务包，参数中的msg是完整包
+*/
 type TcpParser interface{
 	Unpack(msg []byte,c *ConnInfo)(ok bool,packlen int)   //返回成功失败，包长,包长为0表示包长未知
 	HandlePack(msg []byte,c *ConnInfo)(ok bool)
 	//WriteFinishCb(c *ConnInfo)
 }
+
+
+//io线程数量不要超过 CPU物理core的个数（非逻辑处理器个数），配置为core-1 时性能最强
+//查看core个数：cat /proc/cpuinfo| grep "cpu cores"| uniq
+func InitServer(ioNum, maxSocketNum int,addr string,parser TcpParser){
+	Server = NewTcpServer(ioNum, maxSocketNum,addr,parser)
+	Server.Start()
+}
+
 
 type TcpServer struct {
 	ConnList     []*ConnInfo

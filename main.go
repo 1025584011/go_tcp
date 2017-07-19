@@ -35,7 +35,8 @@ var cfg = struct {
 		Mysql    string
 		ListenAddr string
 		MaxSocket int
-		IoNum int    //配置为 core个数-1时性能最佳,不能超过core个数，会出问题
+		IoNum int    //io线程数量不要超过 CPU物理core的个数（非逻辑处理器个数），配置为core-1 时性能最强
+					//查看core个数：cat /proc/cpuinfo| grep "cpu cores"| uniq
 	}
 }{}
 
