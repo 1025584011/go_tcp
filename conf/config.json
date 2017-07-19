@@ -1,0 +1,23 @@
+{
+	"Log": {
+		"File": "log/demoserver.log",
+		"Level": "error",
+		"Name": "demo",
+		"Suffix": "060102-15"
+	},
+	
+	"Prog": {
+		"CPU": 0,
+		"Daemon": true,
+		"HealthPort": "10.133.146.250:6061"
+	},
+	
+	"Server": {
+		"Redis": "tcp://10.133.157.137:6379/0?timeout=60s&maxidle=10",
+		"Mysql":"mysql://root:@tcp(10.133.157.137:3306)/mae",
+		"ListenAddr":"0.0.0.0:11111",
+		"MaxSocket":2000000,
+		"IoNum":1
+	}
+}
+

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="GB2312"?>
+<!--所有各种服务器参数,这里只放每个区都不同的配置-->
+<Zebra>
+	<Key1>
+		<!--MySQL database connection[mysql://user:passwd@host:port/dbName]-->
+		<bw_juxian_key>344a5ec3dacac264f8603db0f24c9f49</bw_juxian_key>
+	</Key1>
+	<global>
+		<!--MySQL database connection[mysql://user:passwd@host:port/dbName]-->
+		<!-- 如果要编码mysql连接字符串请使用工具，配置如下面的例子
+		<mysql encode="yes">lmOf.1kySwS0a09j11xyCdI1ySujl1hnCvT0hDitT0hjzv00gzSv00gDSw91tS9fE1</mysql>
+		-->
+		<!-- Use the specified local network device. -->
+		<mysql encode="no">mysql://root:BW1qaz!QAZ@127.0.0.1:3306/RecordServer_10</mysql>
+		<ifname>eth1</ifname>
+		<!-- Connected to the specified supserserver, property 'port' default value is 10000. -->
+		<superserver port="10000">10.18.20.34</superserver>
+		<config>config</config>
+		<world_level>1</world_level>
+		<cmdswitch>true</cmdswitch>
+		<gamename>战争世界</gamename>
+		<!--change_game_id_middle>3053</change_game_id_middle>
+		<change_zone_id_middle>10</change_zone_id_middle-->
+		 <pre_role_create_desc><![CDATA[<n color=GXColorGreen                                                    text="3月22日逆袭内测新服：逆袭称王，火爆角色预创建中！携手李毅大帝，一起逆袭！全新逆袭玩法，十大活动！3月22日17:00正式开服，不见不散！"/><a text="详情请点击"href="http://active.zqgame.com/zqgame/bw/nixi/index.aspx"/>]]></pre_role_create_desc>
+	</global>
+	<SuperServer>
+		<!--MySQL database connection[mysql://user:passwd@host:port/dbName]-->
+		<mysql encode="no">mysql://root:BW1qaz!QAZ@127.0.0.1:3306/SuperServer_10</mysql>
+	</SuperServer>
+	<RecordServer>
+		<!--MySQL database connection[mysql://user:passwd@host:port/dbName]-->
+		<mysql encode="no">mysql://root:BW1qaz!QAZ@127.0.0.1:3306/RecordServer_10</mysql>
+	</RecordServer>
+	<SessionServer>
+		<!--MySQL database connection[mysql://user:passwd@host:port/dbName]-->
+		<mysql encode="no">mysql://root:BW1qaz!QAZ@127.0.0.1:3306/RecordServer_10</mysql>
+		<armyreg_verify>0</armyreg_verify>
+		<!--外挂特征码配置-->
+		<processfile>map/process.dat</processfile>
+		<netbar_vip>1</netbar_vip>
+		<netbar_master_check>1</netbar_master_check>
+		<netbar_vip_gold>0</netbar_vip_gold>
+	        <!--屏蔽客户端功能，二进制，1表示线下交易 -->
+                <function_disable>0</function_disable>
+	<netbar_master_check>1</netbar_master_check>
+	<netbar_need_gold_31>30000</netbar_need_gold_31>
+	<netbar_need_gold_today>0</netbar_need_gold_today>
+	<netbar_need_gold_mobile>60000</netbar_need_gold_mobile>
+	<netbar_need_gold_60>90000</netbar_need_gold_60>
+	<netbar_need_gold_vip>120000</netbar_need_gold_vip>
+	<netbar_need_gold_vip_2>600000</netbar_need_gold_vip_2>
+	<netbar_need_gold_vip_3>3000000</netbar_need_gold_vip_3>
+	<netbar_need_gold_vip_4>6000000</netbar_need_gold_vip_4>
+	<new_ip_money>1</new_ip_money>
+		<shaizi_percent>20</shaizi_percent>
+	</SessionServer>
+	<ScenesServer>
+		<!--回写档案平率(单位是秒) -->
+		<writebacktimer>300</writebacktimer>
+		<switch_tbl>false</switch_tbl>
+		<switch_script>true</switch_script>
+                <netbar_card>1</netbar_card>
+	</ScenesServer>
+	<GatewayServer>
+		<role_create_mobile_num>1000</role_create_mobile_num>
+		<role_create_mobile>0</role_create_mobile>
+		<role_create_mobile_reply>0</role_create_mobile_reply>
+		<role_create_province_order>1</role_create_province_order>
+		<!-- 国家排序方式 0:不排序 , 1:在线人数排序 , 2:注册人数排序 -->
+		<countryorder>0</countryorder>
+		<rolereg_verify>0</rolereg_verify>
+		<newmap_list>1</newmap_list>
+		<ipnetbar>ipnetbar.xml</ipnetbar>
+		<firewall>/tmp/firewall_status</firewall>
+                <pre_role_create_max>30000</pre_role_create_max>
+                <!--pre_role_create>0</pre_role_create-->
+		<!--结束预创建时间，到时间自动开服之前的配置需要删除<pre_role_create>0</pre_role_create> -->
+                <pre_role_create_end_time>2013-06-07 17:00:00</pre_role_create_end_time>
+                <!--预创建角色积分奖励开始时间 -->
+		<pre_role_create_present_time>2013-06-07 12:00:00</pre_role_create_present_time>
+		<max_mac_online>3</max_mac_online>
+		<max_ip_online>7</max_ip_online>
+		<max_user_online>25000</max_user_online>
+                <underage_verify>0</underage_verify>
+                <pre_role_create_desc>6月7日17:00新区王者盛宴开启，升1级送12元！最高可得1200元。6月7日12:00开启一马当先活动，登录角色选择界面可在线累积成长勋章，兑换豪华装备！</pre_role_create_desc>
+		<forbid_role_create>0</forbid_role_create>
+		<!--forbid_role_create_desc><![CDATA[<n>5月11日封王内测正式开始，敬请期待。目前电信</n><n color="GXColorGreen">神兵再现</n><n>，网通</n><n color="GXColorGreen">一战成王</n><n>服务器预创建角色火热进行中！</n>]]></forbid_role_create_desc-->
+		<id_card_check>1</id_card_check>
+		<role_create_forbid_num>1000</role_create_forbid_num>
+	</GatewayServer>
+</Zebra>

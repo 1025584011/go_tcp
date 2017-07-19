@@ -1,0 +1,29 @@
+{
+	"Log": {
+		"File": "log/demoserver.log",
+		"Level": "debug",
+		"Name": "demo",
+		"Suffix": "060102-15",
+	},
+	
+	"Prog": {
+		"CPU": 0, 						  //配0就用所有核
+		"Daemon":false,					  //是否在终端显示日志
+		"HealthPort": "localhost:6060"    //健康检查端口
+	},
+	
+	"Server": {
+		"Redis": "tcp://10.133.157.28:6379/0?timeout=60s&maxidle=10",
+		"Mysql":"mysql://tcp(10.133.157.28:3306)/MAE",
+		"HttpPort":7070
+	}
+}
+
+
+/*
+	数据库配置示例:
+	<!--mysql encode="no">mysql://xz2:mypass@tcp(127.0.0.1:3306)/LoginServer</mysql-->
+	<!--redis>tcp://auth:password@127.0.0.1:6379/0?timeout=10s&amp;maxidle=10</redis-->
+	<!--redis>tcp://127.0.0.1:6379/1?timeout=10s&amp;maxidle=10</redis-->
+	<mysql_zone encode="no">mysql://root:ydwc_rootp2013@tcp(127.0.0.1:3306)/h5_production</mysql_zone>
+*/
