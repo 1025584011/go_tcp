@@ -18,7 +18,9 @@ Time per request:       0.029 [ms] (mean, across all concurrent requests)
 Transfer rate:          4065.02 [Kbytes/sec] received
 
 Connection Times (ms)
+
               min  mean[+/-sd] median   max
+              
 Connect:        0   14  43.5     13    3019
 
 Processing:     2   14   2.8     14      36
@@ -42,10 +44,15 @@ Time per request:       0.024 [ms] (mean, across all concurrent requests)
 Transfer rate:          4840.31 [Kbytes/sec] received
 
 Connection Times (ms)
+
               min  mean[+/-sd] median   max
+              
 Connect:        0   19 150.3      0    7018
+
 Processing:     1    4  11.8      3    1604
+
 Waiting:        0    4  11.8      3    1604
+
 Total:          1   23 153.7      4    7022
 
 
