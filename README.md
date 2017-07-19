@@ -8,37 +8,6 @@ a tcp server  implement by epoll
 go net/http
 
 [root@compile ~]# ab -n 1000000 -c 1000 http://127.0.0.1:11112/
-This is ApacheBench, Version 2.3 <$Revision: 1430300 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking 127.0.0.1 (be patient)
-apr_socket_recv: Connection refused (111)
-[root@compile ~]# ab -n 1000000 -c 1000 http://127.0.0.1:11112/
-This is ApacheBench, Version 2.3 <$Revision: 1430300 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking 127.0.0.1 (be patient)
-Completed 100000 requests
-Completed 200000 requests
-Completed 300000 requests
-Completed 400000 requests
-Completed 500000 requests
-Completed 600000 requests
-Completed 700000 requests
-Completed 800000 requests
-Completed 900000 requests
-Completed 1000000 requests
-Finished 1000000 requests
-
-
-Server Software:        
-Server Hostname:        127.0.0.1
-Server Port:            11112
-
-Document Path:          /
-Document Length:        4 bytes
 
 Concurrency Level:      1000
 Time taken for tests:   28.828 seconds
@@ -76,27 +45,6 @@ Percentage of the requests served within a certain time (ms)
 go_tcp 
 
 [root@compile ~]# ab -n 1000000 -c 1000 http://127.0.0.1:11111/
-This is ApacheBench, Version 2.3 <$Revision: 1430300 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking 127.0.0.1 (be patient)
-Completed 100000 requests
-Completed 200000 requests
-Completed 300000 requests
-Completed 400000 requests
-Completed 500000 requests
-Completed 600000 requests
-Completed 700000 requests
-Completed 800000 requests
-Completed 900000 requests
-Completed 1000000 requests
-Finished 1000000 requests
-
-
-Server Software:        
-Server Hostname:        127.0.0.1
-Server Port:            11111
 
 Document Path:          /
 Document Length:        4 bytes
