@@ -37,6 +37,8 @@ var cfg = struct {
 		MaxSocket int
 		IoNum int    //io线程数量不要超过 CPU物理core的个数（非逻辑处理器个数），配置为core-1 时性能最强
 					//查看core个数：cat /proc/cpuinfo| grep "cpu cores"| uniq
+		CheckTimeoutTs int  //多久检查一次
+		TimeoutTs int    //多少秒超时
 	}
 }{}
 
@@ -94,7 +96,7 @@ func main() {
 		}
 	}()
 
-	gotcp.InitServer(cfg.Server.IoNum, cfg.Server.MaxSocket,cfg.Server.ListenAddr,&http_p.HttpParser{})
+	gotcp.InitServer(cfg.Server.IoNum, cfg.Server.MaxSocket,cfg.Server.CheckTimeoutTs,cfg.Server.TimeoutTs,cfg.Server.ListenAddr,&http_p.HttpParser{})
 
 	libutil.InitSignal()
 

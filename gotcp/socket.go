@@ -5,6 +5,7 @@ import (
 	"sync"
 	"syscall"
 	"go_tcp/common/logging"
+	"time"
 )
 
 
@@ -27,6 +28,7 @@ func NewSocketInfo(fd int,id uint64, addr syscall.Sockaddr) *SocketInfo {
 		ReadBuffer:  bytes.NewBuffer(make([]byte, 0)),
 		WriteBuffer: bytes.NewBuffer(make([]byte, 0)),
 		WriteMutex: sync.Mutex{},
+		LastAccessTime: time.Now().Unix(),
 	}
 }
 
@@ -43,4 +45,8 @@ func (s *SocketInfo)AddMsgToWriteBuffer(msg []byte) bool{
 	return true
 }
 
-
+//修改socket的上次活跃时间
+func (s *SocketInfo)UpdateAccessTime() bool{
+	s.LastAccessTime = time.Now().Unix()
+	return true
+}

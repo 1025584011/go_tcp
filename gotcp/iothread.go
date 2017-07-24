@@ -9,6 +9,7 @@ import (
 )
 
 type IoThread struct {
+	Index 			 int
 	EventList        []syscall.EpollEvent
 	NotifyList       []*NotifyEvent
 	NotifyMutex      sync.Mutex
@@ -20,13 +21,14 @@ type IoThread struct {
 	ReadTmpBuffer    []byte
 }
 
-func NewIoThread(o *TcpServer) *IoThread {
+func NewIoThread(o *TcpServer,index int) *IoThread {
 	if o == nil {
 		logging.Error("NewIoThread invalid config")
 		return nil
 	}
 
 	return &IoThread{
+		Index: 			  index,
 		Owner:            o,
 		EventList:        make([]syscall.EpollEvent, int(o.MaxSocketNum/o.IoThreadNum)+1),
 		NotifyList:       []*NotifyEvent{},
@@ -62,15 +64,23 @@ func (s *IoThread) Start() error {
 
 	go func() {
 		lastNotify := time.Now()
+		lastCheck := time.Now()
 		var ts int
 		var b_handle_notify bool
 
 		for {
+			
 			if time.Since(lastNotify) < time.Second {
 				ts = 50
 			} else {
 				ts = 1000
 			}
+			
+			if time.Since(lastCheck) > time.Duration(s.Owner.CheckTimeoutTs) * time.Second  {
+				s.checkTimeoutFds()
+				lastCheck = time.Now()
+			}
+			
 			nEvents, err := syscall.EpollWait(s.EpollFd, s.EventList, ts)
 			if err != nil {
 				logging.Error("IoThread EpollWait failed,err=%s", err.Error())
@@ -79,6 +89,10 @@ func (s *IoThread) Start() error {
 			//time.Sleep(time.Microsecond * 100)
 			//nEvents := 0
 			//logging.Error("loop2,nEvents=%d,s.EpollFd=%d", nEvents, s.EpollFd)
+
+			if nEvents > 0 {
+				lastNotify = time.Now()
+			}
 
 			b_handle_notify = false
 			for i := 0; i < nEvents; i++ {
@@ -114,7 +128,6 @@ func (s *IoThread) Start() error {
 				}
 			}
 			if b_handle_notify {
-				lastNotify = time.Now()
 				s.handleNotify()
 			}
 		}
@@ -211,6 +224,8 @@ func (s *IoThread) handleRead(fd int) error {
 	//connInfo.SInfo.LastAccessTime = time.Now().Unix()
 
 	//tmp := make([]byte, ReadBufferLen)
+	connInfo.SInfo.UpdateAccessTime()
+	
 	n, err := syscall.Read(fd, s.ReadTmpBuffer)
 	if err != nil || n < 0 { //看看EAGAIN会返回啥
 		logging.Error("HandleRead Read error,fd=%d,socket=%+v", fd, connInfo.SInfo)
@@ -286,6 +301,8 @@ func (s *IoThread) handleWrite(fd int) error {
 	}
 	//connInfo.SInfo.LastAccessTime = time.Now().Unix()
 
+	connInfo.SInfo.UpdateAccessTime()
+
 	writeBuffLen := connInfo.SInfo.WriteBuffer.Len()
 	if writeBuffLen == 0 {
 		logging.Debug("HandleWrite no data to write")
@@ -343,6 +360,31 @@ func (s *IoThread) closeConn(fd int) error {
 	s.Owner.ConnList[fd] = nil
 	logging.Debug("CloseConn ok,SocketInfo:%+v", c.SInfo)
 	return nil
+}
+
+//checkTimeoutFds
+func (s *IoThread) checkTimeoutFds() {
+	var index int
+	cur := time.Now().Unix()
+	for i:=0;;i++{
+		index = i*s.Owner.IoThreadNum+s.Index 
+		if index >= s.Owner.MaxSocketNum {
+			break
+		}
+		
+		c := s.Owner.ConnList[index]
+		if c == nil {
+			//logging.Debug("checkTimeoutFds CloseConn already closed,fd=%d", fd)
+			continue
+		}
+		
+		if cur >= c.SInfo.LastAccessTime+int64(s.Owner.TimeoutTs){
+			logging.Info("checkTimeoutFds ok,fd:%d,cur:%d,c.SInfo:%+v",index,cur,c.SInfo)
+			s.closeConn(index)
+		}
+		
+	}
+	//logging.Debug("checkTimeoutFds finished")
 }
 
 //异步场景下检查socket唯一id是否匹配

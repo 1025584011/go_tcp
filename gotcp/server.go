@@ -25,8 +25,8 @@ type TcpParser interface{
 
 //io线程数量不要超过 CPU物理core的个数（非逻辑处理器个数），配置为core-1 时性能最强
 //查看core个数：cat /proc/cpuinfo| grep "cpu cores"| uniq
-func InitServer(ioNum, maxSocketNum int,addr string,parser TcpParser){
-	Server = NewTcpServer(ioNum, maxSocketNum,addr,parser)
+func InitServer(ioNum, maxSocketNum,checkTimeoutTs,timeoutTs int,addr string,parser TcpParser){
+	Server = NewTcpServer(ioNum, maxSocketNum,checkTimeoutTs,timeoutTs,addr,parser)
 	Server.Start()
 }
 
@@ -39,9 +39,11 @@ type TcpServer struct {
 	Addr string
 	UniqueId uint64
 	Parser TcpParser
+	CheckTimeoutTs int  //多久检查一次
+	TimeoutTs int //多少秒超时
 }
 
-func NewTcpServer(ioNum, maxSocketNum int,addr string,parser TcpParser) *TcpServer {
+func NewTcpServer(ioNum, maxSocketNum,checkTimeoutTs,timeoutTs int,addr string,parser TcpParser) *TcpServer {
 	if maxSocketNum == 0 || ioNum == 0 {
 		logging.Error("NewTcpServer invalid config")
 		return nil
@@ -54,13 +56,15 @@ func NewTcpServer(ioNum, maxSocketNum int,addr string,parser TcpParser) *TcpServ
 		Addr: addr,
 		UniqueId: 0,
 		Parser: parser,
+		CheckTimeoutTs:checkTimeoutTs,
+		TimeoutTs:timeoutTs,
 	}
 }
 
 func (s *TcpServer) Start() error {
 
 	for i := 0; i < s.IoThreadNum; i++ {
-		iothread := NewIoThread(s)
+		iothread := NewIoThread(s,i)
 		s.IoThreadList = append(s.IoThreadList, iothread)
 		iothread.Start()
 	}

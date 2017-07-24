@@ -17,7 +17,9 @@
 		"Mysql":"mysql://root:@tcp(10.133.157.137:3306)/mae",
 		"ListenAddr":"0.0.0.0:11111",
 		"MaxSocket":2000000,
-		"IoNum":3
+		"IoNum":3,
+		"CheckTimeoutTs":10,
+		"TimeoutTs":120
 	}
 }
 
